@@ -1536,8 +1536,8 @@ export class Replayer {
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : this.usingVirtualDom
-        ? this.virtualDom
-        : this.iframe.contentDocument;
+          ? this.virtualDom
+          : this.iframe.contentDocument;
       if (isSerializedIframe<typeof parent>(parent, mirror)) {
         this.attachDocumentToIframe(
           mutation,
@@ -1708,6 +1708,7 @@ export class Replayer {
     });
 
     const startTime = Date.now();
+    const resolvedTreeNodes = new WeakSet();
     while (queue.length) {
       // transform queue to resolve tree
       const resolveTrees = queueToResolveTrees(queue);
@@ -1728,7 +1729,10 @@ export class Replayer {
           );
         } else {
           iterateResolveTree(tree, (mutation) => {
-            appendNode(mutation);
+            if (!resolvedTreeNodes.has(mutation)) {
+              resolvedTreeNodes.add(mutation);
+              appendNode(mutation);
+            }
           });
         }
       }
